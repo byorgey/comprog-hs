@@ -1,3 +1,5 @@
+-- https://byorgey.wordpress.com/2019/05/22/competitive-programming-in-haskell-scanner/
+
 {-# LANGUAGE LambdaCase #-}
 
 module Scanner where
