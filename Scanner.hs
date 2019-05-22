@@ -1,8 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
 
-import           Control.Monad.State
+module Scanner where
 
-------------------------------------------------------------
+import           Control.Monad.State
 
 type Scanner = State [String]
 
