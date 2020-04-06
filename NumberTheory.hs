@@ -1,3 +1,7 @@
+-- https://byorgey.wordpress.com/2020/02/07/competitive-programming-in-haskell-primes-and-factoring/
+-- https://byorgey.wordpress.com/2020/02/15/competitive-programming-in-haskell-modular-arithmetic-part-1/
+-- https://byorgey.wordpress.com/2020/03/03/competitive-programming-in-haskell-modular-arithmetic-part-2/
+
 module NumberTheory where
 
 import           Data.Map      (Map)

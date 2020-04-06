@@ -1,3 +1,5 @@
+-- https://byorgey.wordpress.com/2019/10/12/competitive-programming-in-haskell-reading-large-inputs-with-bytestring/
+
 {-# LANGUAGE LambdaCase #-}
 
 module ScannerBS where
