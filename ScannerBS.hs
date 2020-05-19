@@ -28,6 +28,9 @@ integer = (read . C.unpack) <$> str
 double :: Scanner Double
 double = (read . C.unpack) <$> str
 
+decimal :: Int -> Scanner Int
+decimal p = (round . ((10^p)*)) <$> double
+
 numberOf :: Scanner a -> Scanner [a]
 numberOf s = int >>= flip replicateM s
 
