@@ -47,8 +47,11 @@ inverse p a = y `mod` p
 ------------------------------------------------------------
 -- Primes, factoring, and divisors
 
-factor :: Integer -> Map Integer Int
-factor = listFactors >>> group >>> map (head &&& length) >>> M.fromList
+factorMap :: Integer -> Map Integer Int
+factorMap = factor >>> M.fromList
+
+factor :: Integer -> [(Integer, Int)]
+factor = listFactors >>> group >>> map (head &&& length)
 
 primes :: [Integer]
 primes = 2 : sieve primes [3..]
@@ -67,11 +70,11 @@ listFactors = go primes
       | otherwise      = go ps n
 
 divisors :: Integer -> [Integer]
-divisors = factor >>> M.assocs >>> map (\(p,k) -> take (k+1) (iterate (*p) 1)) >>>
+divisors = factor >>> map (\(p,k) -> take (k+1) (iterate (*p) 1)) >>>
   sequence >>> map product
 
 totient :: Integer -> Integer
-totient = factor >>> M.assocs >>> map (\(p,k) -> p^(k-1) * (p-1)) >>> product
+totient = factor >>> map (\(p,k) -> p^(k-1) * (p-1)) >>> product
 
 ------------------------------------------------------------
 -- Solving modular equations
