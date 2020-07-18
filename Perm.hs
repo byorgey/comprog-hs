@@ -1,3 +1,5 @@
+-- https://byorgey.wordpress.com/2020/07/18/competitive-programming-in-haskell-cycle-decomposition-with-mutable-arrays/
+
 {-# LANGUAGE BangPatterns #-}
 
 module Perm where
@@ -8,7 +10,6 @@ import           Data.Array.Base
 import           Data.Array.MArray
 import           Data.Array.ST
 import           Data.Array.Unboxed
-import           Data.Array.Unsafe  (unsafeFreeze)
 
 -- | 'Perm' represents a /1-indexed/ permutation.  It can also be
 --   thought of as an endofunction on the set @{1 .. n}@.
@@ -39,9 +40,7 @@ data CycleDecomp = CD
   }
   deriving Show
 
-
-
--- | Cycle decomposition of a permutation, using mutable arrays.
+-- | Cycle decomposition of a permutation in O(n), using mutable arrays.
 permToCycles :: Perm -> CycleDecomp
 permToCycles p = cd where
 
@@ -60,26 +59,40 @@ permToCycles p = cd where
 
   findCycles :: STUArray s Int Int -> STUArray s Int Int -> STUArray s Int Int
     -> Int -> Int -> ST s [Int]
-  findCycles cid cix ccs l !k
+  findCycles cid cix ccs l !k   -- l = next available cycle ID; k = cur element
     | k > n     = return []
     | otherwise = do
+        -- check if k is already marked as part of a cycle
         id <- readArray cid k
         case id of
           0 -> do
+            -- k is unvisited.  Explore its cycle and label it as l.
             len <- labelCycle cid cix l k 0
 
+            -- Remember that we have one more cycle of this size.
             count <- readArray ccs len
             writeArray ccs len (count+1)
 
+            -- Continue with the next label and the next element, and
+            -- remember the size of this cycle
             (len:) <$> findCycles cid cix ccs (l+1) (k+1)
+
+          -- k is already visited: just go on to the next element
           _ -> findCycles cid cix ccs l (k+1)
 
+  -- Explore a single cycle, label all its elements and return its size.
   labelCycle cid cix l k !i = do
+
+    -- Keep going as long as the next element is unlabelled.
     id <- readArray cid k
     case id of
       0 -> do
+
+        -- Label the current element with l.
         writeArray cid k l
+        -- The index of the current element is i.
         writeArray cix k i
+
+        -- Look up the next element in the permutation and continue.
         (1+) <$> labelCycle cid cix l (p!k) (i+1)
       _ -> return 0
-
