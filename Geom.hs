@@ -1,3 +1,6 @@
+-- https://byorgey.wordpress.com/2020/06/24/competitive-programming-in-haskell-vectors-and-2d-geometry/
+
+{-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Geom where
@@ -5,7 +8,7 @@ module Geom where
 ------------------------------------------------------------
 -- 2D points and vectors
 
-data V2 s = V2 { getX :: !s, getY :: !s } deriving (Eq, Ord, Show)
+data V2 s = V2 { getX :: !s, getY :: !s } deriving (Eq, Ord, Show, Functor)
 type V2D  = V2 Double
 
 type P2 s = V2 s
@@ -24,7 +27,7 @@ V2 x1 y1 ^-^ V2 x2 y2 = V2 (x1-x2) (y1-y2)
 
 -- | Scalar multiple of a vector.
 (*^) :: Num s => s -> V2 s -> V2 s
-k *^ (V2 x y) = V2 (k*x) (k*y)
+(*^) k = fmap (k*)
 
 ------------------------------------------------------------
 -- Utilities
@@ -93,8 +96,9 @@ signedTriArea p1 p2 p3 = crossP p1 p2 p3 / 2
 triArea :: Fractional s => P2 s -> P2 s -> P2 s -> s
 triArea p1 p2 p3 = abs (signedTriArea p1 p2 p3)
 
--- | The signed area of the polygon with the given vertices; positive
---   iff the points are given in counterclockwise order.
+-- | The signed area of the polygon with the given vertices, via the
+--   "shoelace formula". Positive iff the points are given in
+--   counterclockwise order.
 signedPolyArea :: Fractional s => [P2 s] -> s
 signedPolyArea pts = sum $ zipWith (signedTriArea zero) pts (tail pts ++ [head pts])
 
