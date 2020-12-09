@@ -22,7 +22,6 @@ sortGroupOn f = sortBy (comparing f) >>> groupBy ((==) `on` f) >>> map ((f.head)
 
 pairs :: [a] -> [(a,a)]
 pairs []     = []
-pairs [_]    = []
 pairs (a:as) = map (a,) as ++ pairs as
 
 withPairs :: Monoid r => (a -> a -> r) -> [a] -> r
