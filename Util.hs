@@ -31,3 +31,13 @@ withPairs f (a:as) = go as
   where
     go []        = withPairs f as
     go (a2:rest) = f a a2 <> go rest
+
+-- Discrete binary search.  Find the smallest integer in [lo,hi] such
+-- that monotone predicate p holds.
+binarySearchD :: Int -> Int -> (Int -> Bool) -> Int
+binarySearchD lo hi p
+  | lo == hi = lo
+  | p mid     = binarySearchD lo mid p
+  | otherwise = binarySearchD (mid+1) hi p
+  where
+    mid = (lo + hi) `div` 2
