@@ -91,8 +91,8 @@ solveMod a b m
 
 -- gcrt solves a system of modular equations.  Each equation x = a
 -- (mod n) is given as a pair (a,n).  Returns a pair (z, k) such that
--- solutions for x satisfy x = z (mod k), that is, solutions are of
--- the form x = z + kt for integer t.
+-- 0 <= z < k and solutions for x satisfy x = z (mod k), that is,
+-- solutions are of the form x = z + kt for integer t.
 gcrt :: [(Integer, Integer)] -> Maybe (Integer, Integer)
 gcrt [e]        = Just e
 gcrt (e1:e2:es) = gcrt2 e1 e2 >>= \e -> gcrt (e:es)
@@ -102,9 +102,9 @@ gcrt (e1:e2:es) = gcrt2 e1 e2 >>= \e -> gcrt (e:es)
 --   x = a (mod n)
 --   x = b (mod m)
 --
--- It returns a pair (c, k) such that all solutions for x satisfy x =
--- c (mod k), that is, solutions are of the form x = c + kt for
--- integer t.
+-- It returns a pair (c, k) such that 0 <= c < k and all solutions for
+-- x satisfy x = c (mod k), that is, solutions are of the form x = c +
+-- kt for integer t.
 gcrt2 :: (Integer, Integer) -> (Integer, Integer) -> Maybe (Integer, Integer)
 gcrt2 (a,n) (b,m)
   | a `mod` g == b `mod` g = Just (((a*v*m + b*u*n) `div` g) `mod` k, k)
