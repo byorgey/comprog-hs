@@ -3,6 +3,7 @@
 module Util where
 
 import           Control.Arrow
+import           Data.Array.IArray
 import           Data.Function
 import           Data.List
 import           Data.Maybe
@@ -18,7 +19,7 @@ both :: (a -> b) -> (a,a) -> (b,b)
 both f (x,y) = (f x, f y)
 
 sortGroupOn :: Ord b => (a -> b) -> [a] -> [(b,[a])]
-sortGroupOn f = sortBy (comparing f) >>> groupBy ((==) `on` f) >>> map ((f.head) &&& id)
+sortGroupOn f = sortOn f >>> groupBy ((==) `on` f) >>> map ((f.head) &&& id)
 
 pairs :: [a] -> [(a,a)]
 pairs []     = []
@@ -41,3 +42,9 @@ binarySearchD lo hi p
   | otherwise = binarySearchD (mid+1) hi p
   where
     mid = (lo + hi) `div` 2
+
+generate :: (Ix i, IArray a e) => (i,i) -> (i -> e) -> a i e
+generate rng f = listArray rng (map f (range rng))
+
+arraydef :: (Ix i, IArray a e) => (i,i) -> e -> [(i,e)] -> a i e
+arraydef rng def vs = array rng ([(i,def) | i <- range rng] ++ vs)
