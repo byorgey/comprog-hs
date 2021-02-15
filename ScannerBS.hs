@@ -51,6 +51,8 @@ till p s = do
 times :: Int -> Scanner a -> Scanner [a]
 times = replicateM
 
+(><) = times
+
 two, three, four :: Scanner a -> Scanner [a]
 [two, three, four] = map times [2..4]
 
