@@ -2,11 +2,13 @@
 
 {-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ViewPatterns               #-}
 
 module Geom where
 
 import           Data.Function (on)
 import           Data.Ord      (compare)
+import           Data.Ratio
 
 ------------------------------------------------------------
 -- 2D points and vectors
@@ -195,6 +197,11 @@ lineFromPoints :: Num s => P2 s -> P2 s -> L2 s
 lineFromPoints p q = L2 v (v `cross` p)
   where
     v = q ^-^ p
+
+slope :: (Integral n, Eq n) => L2 n -> Maybe (Ratio n)
+slope (getDirection -> V2 x y) = case x of
+  0 -> Nothing
+  _ -> Just (y % x)
 
 side :: Num s => L2 s -> P2 s -> s
 side (L2 v c) p = cross v p - c
