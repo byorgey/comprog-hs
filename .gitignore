@@ -2,3 +2,4 @@
 TAGS
 *.o
 *.hi
+dist-newstyle

@@ -1,0 +1,43 @@
+cabal-version:      2.4
+name:               comprog-hs
+version:            0.1.0.0
+synopsis:
+
+-- A longer description of the package.
+-- description:
+homepage:
+
+-- A URL where users can report bugs.
+-- bug-reports:
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             Brent Yorgey
+maintainer:         byorgey@gmail.com
+
+-- A copyright notice.
+-- copyright:
+category:           Development
+extra-source-files:
+    CHANGELOG.md
+    README.md
+
+library
+    exposed-modules:  Geom,
+                      Graph,
+                      Interval,
+                      NumberTheory,
+                      Perm,
+                      ScannerBS,
+                      Scanner,
+                      Slice,
+                      Util
+
+    build-depends:    base ^>=4.14.3.0,
+                      containers,
+                      hashable,
+                      unordered-containers,
+                      array
+
+    -- Directories containing source files.
+    -- hs-source-dirs:
+    default-language: Haskell2010
