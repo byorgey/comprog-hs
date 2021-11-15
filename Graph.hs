@@ -5,6 +5,8 @@
 
 module Graph where
 
+import Enumeration
+
 import           Control.Arrow       ((>>>))
 import           Control.Monad
 import           Control.Monad.ST
@@ -39,25 +41,6 @@ exhaustM f = go
       maybe (return a) go ma
 
 ------------------------------------------------------------
--- Indexing
-------------------------------------------------------------
-
-data Indexing v = Indexing { size :: Int, toInt :: v -> Int, fromInt :: Int -> v }
-
-idIndexing :: Int -> Indexing Int
-idIndexing n = Indexing n id id
-
-indexingFrom :: forall v. (IArray UArray v, Hashable v, Ord v) => [v] -> Indexing v
-indexingFrom vs = Indexing n (fromV HM.!) (toV IA.!)
-  where
-    vs' = S.toList . S.fromList $ vs
-    n = length vs'
-    toV :: UArray Int v
-    toV = listArray (0,n-1) vs'
-    fromV :: HashMap v Int
-    fromV = HM.fromList (zip vs' [0 :: Int ..])
-
-------------------------------------------------------------
 -- BFS
 ------------------------------------------------------------
 
@@ -76,9 +59,9 @@ initBFSState n vs = do
   forM_ vs $ \v -> writeArray l v 0
   return $ BS l p (Seq.fromList vs)
 
-bfs :: forall v. (Eq v, Hashable v) => Indexing v -> [v] -> (v -> [v]) -> (v -> Bool) -> BFSResult v
-bfs Indexing{..} vs next goal
-  = toResult $ bfs' size (map toInt vs) (map toInt . next . fromInt) (goal . fromInt)
+bfs :: forall v. (Eq v, Hashable v) => Enumeration v -> [v] -> (v -> [v]) -> (v -> Bool) -> BFSResult v
+bfs Enumeration{..} vs next goal
+  = toResult $ bfs' card (map locate vs) (map locate . next . select) (goal . select)
   where
     toResult :: (forall s. ST s (BFSState s)) -> BFSResult v
     toResult m = runST $ do
@@ -87,8 +70,8 @@ bfs Indexing{..} vs next goal
       (parent' :: UArray V V) <- unsafeFreeze (parent st)
       return $
         BFSR
-          ((\l -> if l == -1 then Nothing else Just l) . (level' IA.!) . toInt)
-          ((\p -> if p == -1 then Nothing else Just (fromInt p)) . (parent' IA.!) . toInt)
+          ((\l -> if l == -1 then Nothing else Just l) . (level' IA.!) . locate)
+          ((\p -> if p == -1 then Nothing else Just (select p)) . (parent' IA.!) . locate)
 
 visited :: BFSState s -> V -> ST s Bool
 visited BS{..} v = (/= -1) <$> readArray level v

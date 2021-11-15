@@ -22,7 +22,8 @@ extra-source-files:
     README.md
 
 library
-    exposed-modules:  Geom,
+    exposed-modules:  Enumeration,
+                      Geom,
                       Graph,
                       Interval,
                       NumberTheory,
@@ -32,11 +33,13 @@ library
                       Slice,
                       Util
 
-    build-depends:    base ^>=4.14.3.0,
+    build-depends:    base,
                       containers,
                       hashable,
                       unordered-containers,
-                      array
+                      array,
+                      mtl,
+                      bytestring
 
     -- Directories containing source files.
     -- hs-source-dirs:
