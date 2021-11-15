@@ -25,7 +25,7 @@ mapE :: (a -> b) -> (b -> a) -> Enumeration a -> Enumeration b
 mapE f g (Enumeration c s l) = Enumeration c (f . s) (l . g)
 
 -- | List the elements of an enumeration in order.  Inverse of
---   'finiteList'.
+--   'listE'.
 enumerate :: Enumeration a -> [a]
 enumerate e = map (select e) [0 .. card e-1]
 
@@ -45,11 +45,11 @@ singletonE a = Enumeration 1 (const a) (const 0)
 finiteE :: Int -> Enumeration Int
 finiteE n = Enumeration n id id
 
--- | Construct an enumeration from the elements of a /finite/ list,
+-- | Construct an enumeration from the elements of a finite list.
 --   The elements of the list must all be distinct. To turn an
 --   enumeration back into a list, use 'enumerate'.
-finiteListE :: forall a. (Hashable a, Eq a) => [a] -> Enumeration a
-finiteListE as = Enumeration n (toA A.!) (fromA HM.!)
+listE :: forall a. (Hashable a, Eq a) => [a] -> Enumeration a
+listE as = Enumeration n (toA A.!) (fromA HM.!)
   where
     n = length as
     toA :: A.Array Int a
