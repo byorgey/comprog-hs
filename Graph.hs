@@ -75,8 +75,8 @@ bfs Enumeration{..} vs next goal
       (parent' :: UArray V V) <- unsafeFreeze (parent st)
       return $
         BFSR
-          ((\l -> if l == -1 then Nothing else Just l) . (level' IA.!) . locate)
-          ((\p -> if p == -1 then Nothing else Just (select p)) . (parent' IA.!) . locate)
+          ((\l -> guard (l /= -1) >> Just l) . (level' IA.!) . locate)
+          ((\p -> guard (p /= -1) >> Just (select p)) . (parent' IA.!) . locate)
 
 visited :: BFSState s -> V -> ST s Bool
 visited BS{..} v = (/= -1) <$> readArray level v
