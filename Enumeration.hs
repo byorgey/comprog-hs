@@ -1,3 +1,5 @@
+-- https://byorgey.wordpress.com/2021/11/15/competitive-programming-in-haskell-enumeration/
+
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 

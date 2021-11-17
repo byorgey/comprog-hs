@@ -1,3 +1,8 @@
+-- https://byorgey.wordpress.com/2021/10/14/competitive-programming-in-haskell-bfs-part-1/
+-- https://byorgey.wordpress.com/2021/10/18/competitive-programming-in-haskell-bfs-part-2-alternative-apis/
+-- https://byorgey.wordpress.com/2021/10/29/competitive-programming-in-haskell-bfs-part-3-implementation-via-hashmap/
+-- https://byorgey.wordpress.com/2021/11/15/competitive-programming-in-haskell-enumeration/
+
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE RecordWildCards     #-}
