@@ -64,7 +64,7 @@ initBFSState n vs = do
   forM_ vs $ \v -> writeArray l v 0
   return $ BS l p (Seq.fromList vs)
 
-bfs :: forall v. (Eq v, Hashable v) => Enumeration v -> [v] -> (v -> [v]) -> (v -> Bool) -> BFSResult v
+bfs :: forall v. Enumeration v -> [v] -> (v -> [v]) -> (v -> Bool) -> BFSResult v
 bfs Enumeration{..} vs next goal
   = toResult $ bfs' card (map locate vs) (map locate . next . select) (goal . select)
   where
