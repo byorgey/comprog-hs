@@ -15,19 +15,13 @@ import Enumeration
 import           Control.Arrow       ((>>>))
 import           Control.Monad
 import           Control.Monad.ST
-import           Data.Array.IArray   (IArray, listArray)
 import qualified Data.Array.IArray   as IA
 import           Data.Array.ST
 import           Data.Array.Unboxed  (UArray)
 import qualified Data.Array.Unboxed  as U
 import           Data.Array.Unsafe   (unsafeFreeze)
-import           Data.HashMap.Strict (HashMap)
-import qualified Data.HashMap.Strict as HM
-import           Data.Hashable
 import           Data.Sequence       (Seq (..), ViewL (..), (<|), (|>))
 import qualified Data.Sequence       as Seq
-import           Data.Set            (Set)
-import qualified Data.Set            as S
 
 ------------------------------------------------------------
 -- Utilities
