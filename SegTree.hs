@@ -1,9 +1,11 @@
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ViewPatterns          #-}
 
 module SegTree where
 
 import           Data.List      (find)
+import           Data.Maybe     (fromMaybe)
 import           Data.Semigroup
 
 class Action m s where
@@ -12,6 +14,10 @@ class Action m s where
 data SegTree m a
   = Leaf !Int !a
   | Node !Int !Int !a !m (SegTree m a) (SegTree m a)
+  deriving Show
+
+instance Action () s where
+  act _ = id
 
 node :: (Action m a, Semigroup a) => m -> SegTree m a -> SegTree m a -> SegTree m a
 node m l r = Node (getLeft l) (getRight r) (act m (getValue l <> getValue r)) m l r
@@ -85,3 +91,31 @@ applyRange x y m n@(Node i j a m' l r)
   | x <= i && j <= y = Node i j a (m <> m') l r
   | otherwise = case push n of
       Node _ _ _ _ l r -> node mempty (applyRange x y m l) (applyRange x y m r)
+
+-- XXX
+startingFrom :: (Monoid m, Action m a) => Int -> SegTree m a -> [SegTree m a]
+startingFrom l t = go t []
+  where
+    go t@(Leaf i _)
+      | l <= i = (t:)
+      | otherwise = id
+    go (push -> t@(Node i j _ _ lt rt))
+      | l <= i = (t:)
+      | l < getLeft rt = go lt . (rt:)
+      | l < getRight rt = go rt
+      | otherwise = id
+
+-- XXX
+maxRight :: (Monoid a, Monoid m, Action m a) => Int -> (a -> Bool) -> SegTree m a -> Int
+maxRight l g t = fromMaybe (getRight t) (go mempty (startingFrom l t))
+  where
+    go _ [] = Nothing
+    go cur (Leaf i a : ts)
+      | g (cur <> a) = go (cur <> a) ts
+      | otherwise    = Just i
+    go cur ((push -> Node i j a _ lt rt) : ts)
+      | g (cur <> a) = go (cur <> a) ts
+      | otherwise    = go cur (lt : rt : ts)
+
+minLeft :: (Monoid a, Monoid m, Action m a) => Int -> (a -> Bool) -> SegTree m a -> Int
+minLeft = undefined
