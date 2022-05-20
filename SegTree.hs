@@ -4,9 +4,8 @@
 
 module SegTree where
 
-import           Data.List      (find)
-import           Data.Maybe     (fromMaybe)
-import           Data.Semigroup
+import           Data.List  (find)
+import           Data.Maybe (fromMaybe)
 
 class Action m s where
   act :: m -> s -> s
@@ -92,7 +91,6 @@ applyRange x y m n@(Node i j a m' l r)
   | otherwise = case push n of
       Node _ _ _ _ l r -> node mempty (applyRange x y m l) (applyRange x y m r)
 
--- XXX
 startingFrom :: (Monoid m, Action m a) => Int -> SegTree m a -> [SegTree m a]
 startingFrom l t = go t []
   where
@@ -105,7 +103,15 @@ startingFrom l t = go t []
       | l < getRight rt = go rt
       | otherwise = id
 
--- XXX
+-- | Preconditions:
+--
+--   - @l <= getRight t@
+--   - @g(mempty) == True@
+--   - @g@ is antitone, that is, if @g(a)@ is false then so is @g(a <> b)@.
+--
+--   Given these preconditions, @maxRight l g t@ returns the biggest
+--   @r@ such that @g (range l r t) == True@ but @g (range l (r+1) t)
+--   == False@ (or @r = getRight t@ if there is no such @r@).
 maxRight :: (Monoid a, Monoid m, Action m a) => Int -> (a -> Bool) -> SegTree m a -> Int
 maxRight l g t = fromMaybe (getRight t) (go mempty (startingFrom l t))
   where
