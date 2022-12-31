@@ -2,27 +2,27 @@ module BinarySearch where
 
 -- See https://julesjacobs.com/notes/binarysearch/binarysearch.pdf
 
--- | Generic search function.  Give it one of the step functions such
---   as 'binary', 'continuous', 'fwd', or 'bwd', a monotonic
---   predicate, low and high values, and it finds values (l,r) right
---   next to each other where the predicate switches from False to
---   True.
+-- | Generic search function.  Takes a step function, a predicate, and
+--   low and high values, and it finds values (l,r) right next to each
+--   other where the predicate switches from False to True.
 --
 --   More specifically, for @search mid p l r@:
---     - PRECONDITION: (p l) must be False and (p r) must be True!
---     - The predicate @p@ must be monotonic, that is, intuitively,
---       @p@ must switch from False to True exactly once.  Formally,
---       if @x <= y@ then @p x <= p y@ (where @False <= True@).
+--     - PRECONDITIONS:
+--       - @(p l)@ must be @False@ and @(p r)@ must be @True@!
+--       - If using one of the binary search step functions, the
+--         predicate @p@ must be monotonic, that is, intuitively, @p@
+--         must switch from @False@ to @True@ exactly once.  Formally, if
+--         @x <= y@ then @p x <= p y@ (where @False <= True@).
 --     - The mid function is called as @mid l r@ to find the next
---       index to search on the interval [l, r].  @mid l r@ must be
---       strictly between @l@ and @r@.
---       - Use 'binary' to do binary search over the integers (the
---         predicate must be monotonic)
+--       index to search on the interval [l, r].  @mid l r@ must
+--       return a value strictly between @l@ and @r@.
+--       - Use 'binary' to do binary search over the integers.
 --       - Use @('continuous' eps)@ to do binary search over rational
 --         or floating point values.  (l,r) are returned such that r -
---         l <= eps.  The predicate must be monotonic.
---       - Use 'fwd' or 'bwd' to do linear search through a range. The
---         predicate need not be monotonic.
+--         l <= eps.
+--       - Use 'binaryFloat' to do precise binary search over the
+--         bit representation of 'Double' values.
+--       - Use 'fwd' or 'bwd' to do linear search through a range.
 --     - Returns (l,r) such that:
 --       - @not (p l) && p r@
 --       - @mid l r == Nothing@
