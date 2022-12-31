@@ -1,6 +1,10 @@
+-- XXX blog post
+-- https://julesjacobs.com/notes/binarysearch/binarysearch.pdf
+
 module BinarySearch where
 
--- See https://julesjacobs.com/notes/binarysearch/binarysearch.pdf
+import           Data.Word     (Word64)
+import           Unsafe.Coerce (unsafeCoerce)
 
 -- | Generic search function.  Takes a step function, a predicate, and
 --   low and high values, and it finds values (l,r) right next to each
@@ -63,23 +67,13 @@ bwd l r
   | r - l > 1 = Just (r-1)
   | otherwise = Nothing
 
-------------------------------------------------------------
+-- | Step function for precise binary search over the bit
+--   representation of @Double@ values.
+binaryFloat :: Double -> Double -> Maybe Double
+binaryFloat l r = decode <$> binary (encode l) (encode r)
+  where
+    encode :: Double -> Word64
+    encode = unsafeCoerce
 
--- The following code in theory should allow us to binary search much
--- more effectively on floating-point values.  It works in ghci but
--- seems to cause errors (from the assembler!) when compiled.
-
--- {-# LANGUAGE MagicHash #-}
-
--- import           GHC.Types
--- import           GHC.Word
--- import           Unsafe.Coerce
-
--- binaryFloat :: Double -> Double -> Maybe Double
--- binaryFloat l r = decode <$> binary (encode l) (encode r)
-
--- encode :: Double -> Word64
--- encode (D# x) = W64# (unsafeCoerce# x)
-
--- decode :: Word64 -> Double
--- decode (W64# x) = D# (unsafeCoerce# x)
+    decode :: Word64 -> Double
+    decode = unsafeCoerce
