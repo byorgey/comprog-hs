@@ -1,4 +1,4 @@
--- XXX blog post
+-- https://byorgey.wordpress.com/2023/01/01/competitive-programming-in-haskell-better-binary-search/
 -- https://julesjacobs.com/notes/binarysearch/binarysearch.pdf
 
 module BinarySearch where
