@@ -1,4 +1,5 @@
 -- https://byorgey.wordpress.com/2023/01/01/competitive-programming-in-haskell-better-binary-search/
+-- https://byorgey.wordpress.com/2023/01/02/binary-search-over-floating-point-representations/
 -- https://julesjacobs.com/notes/binarysearch/binarysearch.pdf
 
 module BinarySearch where
@@ -76,6 +77,7 @@ bwd l r
 -- they even correct?  Was it worth it?  Who knows! See:
 --
 -- https://byorgey.wordpress.com/2023/01/01/competitive-programming-in-haskell-better-binary-search/#comment-40882
+-- https://byorgey.wordpress.com/2023/01/02/binary-search-over-floating-point-representations/
 -- https://web.archive.org/web/20220326204603/http://stereopsis.com/radix.html
 
 -- | Step function for precise binary search over the bit
