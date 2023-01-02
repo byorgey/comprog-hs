@@ -45,14 +45,14 @@ search mid p = go
 --   when @r - l <= 1@; otherwise returns their midpoint.
 binary :: Integral a => a -> a -> Maybe a
 binary l r
-  | r - l > 1 = Just ((l+r) `div` 2)
+  | r - l > 1 = Just (l + (r-l) `div` 2)
   | otherwise = Nothing
 
 -- | Step function for continuous binary search.  Stops once
 --   @r - l <= eps@; otherwise returns their midpoint.
 continuous :: (Fractional a, Ord a) => a -> a -> a -> Maybe a
 continuous eps l r
-  | r - l > eps = Just ((l+r) / 2)
+  | r - l > eps = Just (l + (r-l)/2)
   | otherwise = Nothing
 
 -- | Step function for forward linear search.  Stops when @r - l <=
