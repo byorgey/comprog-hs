@@ -69,20 +69,25 @@ bwd l r
   | r - l > 1 = Just (r-1)
   | otherwise = Nothing
 
+------------------------------------------------------------
+-- Binary search on floating-point representations
+
 -- A lot of blood, sweat, and tears went into these functions.  Are
--- they even correct?  Was it worth it?  Who knows!
+-- they even correct?  Was it worth it?  Who knows! See:
 --
--- https://web.archive.org/web/20220326204603/http://stereopsis.com/radix.html
 -- https://byorgey.wordpress.com/2023/01/01/competitive-programming-in-haskell-better-binary-search/#comment-40882
+-- https://web.archive.org/web/20220326204603/http://stereopsis.com/radix.html
 
 -- | Step function for precise binary search over the bit
 --   representation of @Double@ values.
 floating :: Double -> Double -> Maybe Double
-floating l r = decode <$> binary (encode l) (encode r)
+floating l r = b2f <$> binary (f2b l) (f2b r)
 
-encode :: Double -> Word64
-encode 0 = 0x7fffffffffffffff
-encode x
+-- | A monotonic conversion from 'Double' to 'Word64'.  That is,
+--   @x < y@ iff @f2b x < f2b y@.  'b2f' is its inverse.
+f2b :: Double -> Word64
+f2b 0 = 0x7fffffffffffffff
+f2b x
   = (if m < 0 then 0 else bit 63)
   `xor` flipNeg (eBits `xor` mBits)
   where
@@ -96,9 +101,16 @@ encode x
       | m < 0 = (`clearBit` 63) . complement
       | otherwise = id
 
-decode :: Word64 -> Double
-decode 0x7fffffffffffffff = 0
-decode w = encodeFloat m (fromIntegral e - bias - d)
+prop_f2b_monotonic :: Double -> Double -> Bool
+prop_f2b_monotonic x y = (x < y) == (f2b x < f2b y)
+
+-- | The left inverse of 'f2b', that is, for all @x :: Double@, @b2f
+--   (f2b x) == x@.  Note @f2b (b2f x) == x@ does not strictly hold
+--   since not every @Word64@ value corresponds to a valid @Double@
+--   value.
+b2f :: Word64 -> Double
+b2f 0x7fffffffffffffff = 0
+b2f w = encodeFloat m (fromIntegral e - bias - d)
   where
     s = testBit w 63
     w' = (if s then id else complement) w
@@ -107,3 +119,31 @@ decode w = encodeFloat m (fromIntegral e - bias - d)
     bias = 1023
     m = (if s then id else negate) (fromIntegral ((w' .&. ((1 `shiftL` d) - 1)) `setBit` d))
     e = clearBit w' 63 `shiftR` d
+
+prop_b2f_f2b :: Double -> Bool
+prop_b2f_f2b x = b2f (f2b x) == x
+
+-- Some Word64 values correspond to +/-Infinity or NaN.  For most
+-- others, f2b is inverse to b2f; for a few that represent very tiny
+-- floating-point values, the Word64 resulting from a round trip may
+-- differ by 1.
+prop_f2b_b2f :: Word64 -> Bool
+prop_f2b_b2f w = isInfinite x || isNaN x || dist (f2b x) w <= 1
+  where
+    x = b2f w
+    dist x y
+      | x < y = y - x
+      | otherwise = x - y
+
+-- Given two distinct Double values, if we take the midpoint of their
+-- corresponding Word64 values, we get another Word64 that represents
+-- a floating point number strictly in between the original two.
+prop_f2b_mid_monotonic :: Double -> Double -> Bool
+prop_f2b_mid_monotonic x y = x == y || (x' < z && z < y')
+  where
+    x' = min x y
+    y' = max x y
+    l = f2b x'
+    r = f2b y'
+    m = l + (r-l) `div` 2
+    z = b2f m
