@@ -3,6 +3,7 @@
 
 module BinarySearch where
 
+import           Data.Bits
 import           Data.Word     (Word64)
 import           Unsafe.Coerce (unsafeCoerce)
 
@@ -24,9 +25,10 @@ import           Unsafe.Coerce (unsafeCoerce)
 --       - Use @('continuous' eps)@ to do binary search over rational
 --         or floating point values.  (l,r) are returned such that r -
 --         l <= eps.
---       - Use 'binaryFloat' to do precise binary search over the
---         bit representation of 'Double' values.
 --       - Use 'fwd' or 'bwd' to do linear search through a range.
+--       - If you are feeling adventurous, use 'floating' to do
+--         precise binary search over the bit representation of
+--         'Double' values.
 --     - Returns (l,r) such that:
 --       - @not (p l) && p r@
 --       - @mid l r == Nothing@
@@ -67,13 +69,41 @@ bwd l r
   | r - l > 1 = Just (r-1)
   | otherwise = Nothing
 
+-- A lot of blood, sweat, and tears went into these functions.  Are
+-- they even correct?  Was it worth it?  Who knows!
+--
+-- https://web.archive.org/web/20220326204603/http://stereopsis.com/radix.html
+-- https://byorgey.wordpress.com/2023/01/01/competitive-programming-in-haskell-better-binary-search/#comment-40882
+
 -- | Step function for precise binary search over the bit
 --   representation of @Double@ values.
-binaryFloat :: Double -> Double -> Maybe Double
-binaryFloat l r = decode <$> binary (encode l) (encode r)
-  where
-    encode :: Double -> Word64
-    encode = unsafeCoerce
+floating :: Double -> Double -> Maybe Double
+floating l r = decode <$> binary (encode l) (encode r)
 
-    decode :: Word64 -> Double
-    decode = unsafeCoerce
+encode :: Double -> Word64
+encode 0 = 0x7fffffffffffffff
+encode x
+  = (if m < 0 then 0 else bit 63)
+  `xor` flipNeg (eBits `xor` mBits)
+  where
+    (m, e) = decodeFloat x
+    eBits = fromIntegral (e + d + bias) `shiftL` d
+    mBits = fromIntegral (abs m) `clearBit` d
+
+    d = floatDigits x - 1
+    bias = 1023
+    flipNeg
+      | m < 0 = (`clearBit` 63) . complement
+      | otherwise = id
+
+decode :: Word64 -> Double
+decode 0x7fffffffffffffff = 0
+decode w = encodeFloat m (fromIntegral e - bias - d)
+  where
+    s = testBit w 63
+    w' = (if s then id else complement) w
+
+    d = floatDigits (1 :: Double) - 1
+    bias = 1023
+    m = (if s then id else negate) (fromIntegral ((w' .&. ((1 `shiftL` d) - 1)) `setBit` d))
+    e = clearBit w' 63 `shiftR` d
