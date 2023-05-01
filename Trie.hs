@@ -5,7 +5,7 @@ import qualified Data.ByteString.Lazy.Char8 as C
 import           Data.List                  (foldl')
 import           Data.Map                   (Map, (!))
 import qualified Data.Map                   as M
-import           Data.Maybe                 (fromMaybe)
+import           Data.Maybe                 (fromMaybe, isJust)
 
 data Trie a = Trie
   { trieSize :: !Int
@@ -17,14 +17,24 @@ data Trie a = Trie
 emptyTrie :: Trie a
 emptyTrie = Trie 0 Nothing M.empty
 
--- | Insert a new key/value pair into a trie.
+-- | Insert a new key/value pair into a trie, updating the size
+--   appropriately.
 insert :: C.ByteString -> a -> Trie a -> Trie a
-insert w a = C.foldr
-  (\c ins (Trie n b m) -> Trie (n+1) b $ M.insert c (ins $ fromMaybe emptyTrie (M.lookup c m)) m)
-  (\(Trie n _ m) -> Trie (n+1) (Just a) m)
-  w
+insert w a t = fst (go w t)
+  where
+    go = C.foldr
+      (\c ins (Trie n v m) ->
+         let (t', ds) = ins (fromMaybe emptyTrie (M.lookup c m))
+         in  (Trie (n+ds) v (M.insert c t' m), ds)
+      )
+      (\(Trie n v m) ->
+         let ds = if isJust v then 0 else 1
+         in  (Trie (n+ds) (Just a) m, ds)
+      )
 
--- | Create an initial trie from a list of key/value pairs.
+-- | Create an initial trie from a list of key/value pairs.  If there
+--   are multiple pairs with the same key, later pairs override
+--   earlier ones.
 mkTrie :: [(C.ByteString, a)] -> Trie a
 mkTrie = foldl' (flip (uncurry insert)) emptyTrie
 
@@ -34,7 +44,7 @@ lookup1 :: Char -> Trie a -> Maybe (Trie a)
 lookup1 c = M.lookup c . children
 
 -- | Look up a string key in a trie, returning the corresponding value
--- (if any).
+--   (if any).
 lookup :: C.ByteString -> Trie a -> Maybe a
 lookup = C.foldr ((>=>) . lookup1) value
 
@@ -47,6 +57,8 @@ foldTrie f (Trie n b m) = f n b (M.map (foldTrie f) m)
 --   the bottom, and returning the list of all values encountered
 --   along the way.  Note that this function will crash if it ever
 --   looks up a character which is not in the current trie.
+--
+--   This is of particular use in decoding using a prefix-free code.
 drive :: Trie a -> C.ByteString -> [a]
 drive t = reverse . snd . C.foldl' step (t, [])
   where
