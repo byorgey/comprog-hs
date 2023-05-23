@@ -6,7 +6,9 @@ module NumberTheory where
 
 import           Data.Map      (Map)
 import qualified Data.Map      as M
+import qualified Data.Foldable as F
 
+import           Data.Maybe    (fromJust)
 import           Control.Arrow
 import           Data.List     (group, sort)
 
@@ -47,6 +49,54 @@ inverse p a = y `mod` p
 ------------------------------------------------------------
 -- Primes, factoring, and divisors
 
+--------------------------------------------------
+-- Miller-Rabin primality testing
+
+smallPrimes = take 9 primes
+
+-- With these values of a, guaranteed to work up to 3*10^18 (see https://pastebin.com/6XEFRPaZ)
+isPrime :: Integer -> Bool
+isPrime n = n `elem` smallPrimes || (n >= 29 && all (spp n) smallPrimes)
+
+-- spp n a tests whether n is a strong probable prime to base a.
+spp :: Integer -> Integer -> Bool
+spp n a = (modexp a d n == 1) || (n-1) `elem` as
+  where
+    (s,d) = decompose (n-1)
+    ad = modexp a d n
+    as = take (fromIntegral s) (iterate ((`mod`n) . (^2)) ad)
+
+-- decompose n = (s,d) such that n = 2^s * d and d is odd.
+decompose :: Integer -> (Integer, Integer)
+decompose n
+  | odd n = (0, n)
+  | otherwise = first succ (decompose (n `div` 2))
+
+--------------------------------------------------
+-- Pollard Rho factoring algorithm
+
+-- Tries to find a non-trivial factor of the given number, using the
+-- given starting value.
+pollardRho :: Integer -> Integer -> Maybe Integer
+pollardRho a n = go (g a) (g (g a))
+  where
+    go x y
+      | d == n = Nothing
+      | d == 1 = go (g x) (g (g y))
+      | otherwise = Just d
+      where
+        d = gcd (abs (x - y)) n
+    g x = (x*x + 1) `mod` n
+
+-- Find a nontrivial factor of a number we know for sure is composite.
+compositeFactor :: Integer -> Integer
+compositeFactor n | even n = 2
+compositeFactor 25 = 5
+compositeFactor n = fromJust (F.asum (map (`pollardRho` n) [2 ..]))
+
+--------------------------------------------------
+-- Factoring
+
 factorMap :: Integer -> Map Integer Int
 factorMap = factor >>> M.fromList
 
@@ -61,13 +111,22 @@ primes = 2 : sieve primes [3..]
       in  h ++ sieve ps (filter ((/=0).(`mod`p)) t)
 
 listFactors :: Integer -> [Integer]
-listFactors = go primes
+listFactors = sort . go
   where
-    go _ 1      = []
-    go (p:ps) n
-      | p*p > n = [n]
-      | n `mod` p == 0 = p : go (p:ps) (n `div` p)
-      | otherwise      = go ps n
+    go n
+      | isPrime n = [n]
+      | otherwise = go d ++ go (n `div` d)
+      where
+        d = compositeFactor n
+
+-- listFactors :: Integer -> [Integer]
+-- listFactors = go primes
+--   where
+--     go _ 1      = []
+--     go (p:ps) n
+--       | p*p > n = [n]
+--       | n `mod` p == 0 = p : go (p:ps) (n `div` p)
+--       | otherwise      = go ps n
 
 divisors :: Integer -> [Integer]
 divisors = factor >>> map (\(p,k) -> take (k+1) (iterate (*p) 1)) >>>
