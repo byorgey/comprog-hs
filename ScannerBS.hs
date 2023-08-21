@@ -5,6 +5,7 @@
 module ScannerBS where
 
 import           Control.Applicative        (liftA2)
+import           Control.Monad              (replicateM)
 import           Control.Monad.State
 import qualified Data.ByteString.Lazy.Char8 as C
 import           Data.Maybe                 (fromJust)
