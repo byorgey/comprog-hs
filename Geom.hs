@@ -70,6 +70,9 @@ toDeg (A r) = r * 180 / pi
 toRad :: Angle s -> s
 toRad (A r) = r
 
+dir :: V2D -> Angle Double
+dir (V2 x y) = A $ atan2 y x
+
 -- | Construct a vector in polar coordinates.
 fromPolar :: Floating s => s -> Angle s -> V2 s
 fromPolar r θ = rot θ (V2 r 0)
