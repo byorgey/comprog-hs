@@ -222,3 +222,36 @@ project l p = p ^+^ toProjection l p
 
 reflectAcross :: Fractional s => L2 s -> P2 s -> P2 s
 reflectAcross l p = p ^+^ (2 *^ toProjection l p)
+
+------------------------------------------------------------
+-- Rectangles
+
+data Rect s = Rect {lowerLeft :: P2 s, dims :: V2 s} deriving (Eq, Show)
+
+pointInRect :: (Ord s, Num s) => P2 s -> Rect s -> Bool
+pointInRect (V2 px py) (Rect (V2 llx lly) (V2 dx dy)) =
+  and
+    [ px >= llx
+    , px <= llx + dx
+    , py >= lly
+    , py <= lly + dy
+    ]
+
+------------------------------------------------------------
+-- Circles
+
+data Circle s = Circle {center :: P2 s, radius :: s} deriving (Eq, Show)
+
+pointInCircle :: (Ord s, Num s) => P2 s -> Circle s -> Bool
+pointInCircle p (Circle c r) = normSq (p ^-^ c) <= r * r
+
+rectCircleIntersection :: (Ord s, Num s) => Rect s -> Circle s -> Bool
+rectCircleIntersection (Rect ll@(V2 llx lly) d@(V2 dx dy)) (Circle c r) =
+  or
+    [ pointInRect c (Rect (V2 (llx - r) lly) (V2 (dx + 2 * r) dy))
+    , pointInRect c (Rect (V2 llx (lly - r)) (V2 dx (dy + 2 * r)))
+    , pointInCircle c (Circle ll r)
+    , pointInCircle c (Circle (ll ^+^ V2 dx 0) r)
+    , pointInCircle c (Circle (ll ^+^ V2 0 dy) r)
+    , pointInCircle c (Circle (ll ^+^ d) r)
+    ]
