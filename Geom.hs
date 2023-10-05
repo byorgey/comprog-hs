@@ -1,23 +1,22 @@
 -- https://byorgey.wordpress.com/2020/06/24/competitive-programming-in-haskell-vectors-and-2d-geometry/
-
-{-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE ViewPatterns               #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Geom where
 
-import           Data.Function (on)
-import           Data.Ord      (compare)
-import           Data.Ratio
+import Data.Function (on)
+import Data.Ord (compare)
+import Data.Ratio
 
 ------------------------------------------------------------
 -- 2D points and vectors
 
-data V2 s = V2 { getX :: !s, getY :: !s } deriving (Eq, Ord, Show, Functor)
-type V2D  = V2 Double
+data V2 s = V2 {getX :: !s, getY :: !s} deriving (Eq, Ord, Show, Functor)
+type V2D = V2 Double
 
 type P2 s = V2 s
-type P2D  = P2 Double
+type P2D = P2 Double
 
 instance Foldable V2 where
   foldMap f (V2 x y) = f x <> f y
@@ -27,12 +26,12 @@ zero = V2 0 0
 
 -- | Adding and subtracting vectors.
 (^+^), (^-^) :: Num s => V2 s -> V2 s -> V2 s
-V2 x1 y1 ^+^ V2 x2 y2 = V2 (x1+x2) (y1+y2)
-V2 x1 y1 ^-^ V2 x2 y2 = V2 (x1-x2) (y1-y2)
+V2 x1 y1 ^+^ V2 x2 y2 = V2 (x1 + x2) (y1 + y2)
+V2 x1 y1 ^-^ V2 x2 y2 = V2 (x1 - x2) (y1 - y2)
 
 -- | Scalar multiple of a vector.
 (*^) :: Num s => s -> V2 s -> V2 s
-(*^) k = fmap (k*)
+(*^) k = fmap (k *)
 
 ------------------------------------------------------------
 -- Utilities
@@ -43,8 +42,8 @@ v2, p2 :: Applicative f => f s -> f (V2 s)
 v2 s = V2 <$> s <*> s
 p2 = v2
 
-newtype ByX s = ByX { unByX :: V2 s } deriving (Eq, Show, Functor)
-newtype ByY s = ByY { unByY :: V2 s } deriving (Eq, Show, Functor)
+newtype ByX s = ByX {unByX :: V2 s} deriving (Eq, Show, Functor)
+newtype ByY s = ByY {unByY :: V2 s} deriving (Eq, Show, Functor)
 
 instance Ord s => Ord (ByX s) where
   compare = compare `on` (getX . unByX)
@@ -55,7 +54,7 @@ instance Ord s => Ord (ByY s) where
 ------------------------------------------------------------
 -- Angles
 
-newtype Angle s = A s  -- angle (radians)
+newtype Angle s = A s -- angle (radians)
   deriving (Show, Eq, Ord, Num, Fractional, Floating)
 
 fromDeg :: Floating s => s -> Angle s
@@ -91,7 +90,7 @@ perp (V2 x y) = V2 (-y) x
 --   (unsigned) angle between u and v).  So u·v is zero iff the vectors
 --   are perpendicular.
 dot :: Num s => V2 s -> V2 s -> s
-dot (V2 x1 y1) (V2 x2 y2) = x1*x2 + y1*y2
+dot (V2 x1 y1) (V2 x2 y2) = x1 * x2 + y1 * y2
 
 -- | 'dotP p1 p2 p3' computes the dot product of the vectors from p1
 -- to p2 and from p1 to p3.
@@ -112,9 +111,9 @@ norm = sqrt . normSq
 --   will always be in the range $[0, \pi]$.
 angleP :: Floating s => P2 s -> P2 s -> P2 s -> Angle s
 angleP x y z = A $ acos (dot a b / (norm a * norm b))
-  where
-    a = (x ^-^ y)
-    b = (z ^-^ y)
+ where
+  a = (x ^-^ y)
+  b = (z ^-^ y)
 
 -- | 'signedAngleP p1 p2 p3' computes the /signed/ angle p1-p2-p3
 --   (/i.e./ the angle at p2 made by rays to p1 and p3), in the range
@@ -123,7 +122,7 @@ angleP x y z = A $ acos (dot a b / (norm a * norm b))
 signedAngleP :: (Floating s, Ord s) => P2 s -> P2 s -> P2 s -> Angle s
 signedAngleP x y z = case turnP x y z of
   CCW -> -angleP x y z
-  _   -> angleP x y z
+  _ -> angleP x y z
 
 ------------------------------------------------------------
 -- Cross product
@@ -136,7 +135,7 @@ signedAngleP x y z = case turnP x y z of
 --
 --   Note this works even for integral scalar types.
 cross :: Num s => V2 s -> V2 s -> s
-cross (V2 ux uy) (V2 vx vy) = ux*vy - vx*uy
+cross (V2 ux uy) (V2 vx vy) = ux * vy - vx * uy
 
 -- | A version of cross product specialized to three points describing
 --   the endpoints of the vectors.  The first argument is the shared
@@ -184,13 +183,13 @@ turnP x y z
   | s > 0 = CCW
   | s == 0 = Par
   | otherwise = CW
-  where
-    s = signum (crossP x y z)
+ where
+  s = signum (crossP x y z)
 
 ------------------------------------------------------------
 -- 2D Lines
 
-data L2 s = L2 { getDirection :: !(V2 s), getOffset :: !s }
+data L2 s = L2 {getDirection :: !(V2 s), getOffset :: !s}
 type L2D = L2 Double
 
 lineFromEquation :: Num s => s -> s -> s -> L2 s
@@ -198,8 +197,8 @@ lineFromEquation a b c = L2 (V2 b (-a)) c
 
 lineFromPoints :: Num s => P2 s -> P2 s -> L2 s
 lineFromPoints p q = L2 v (v `cross` p)
-  where
-    v = q ^-^ p
+ where
+  v = q ^-^ p
 
 slope :: (Integral n, Eq n) => L2 n -> Maybe (Ratio n)
 slope (getDirection -> V2 x y) = case x of
