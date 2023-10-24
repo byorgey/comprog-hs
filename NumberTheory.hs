@@ -52,11 +52,31 @@ inverse p a = y `mod` p
 --------------------------------------------------
 -- Miller-Rabin primality testing
 
-smallPrimes = take 9 primes
+smallPrimes _ = take 9 primes
+
+-- https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Testing_against_small_sets_of_bases
+-- smallPrimes n
+--   | n < 2047 = [2]
+--   | n < 1373653 = [2,3]
+--   | n < 9080191 = [31, 73]
+--   | n < 25326001 = [2, 3, 5]
+--   | n < 3215031751 = [2, 3, 5, 7]
+--   | n < 4759123141 = [2, 7, 61]
+--   | n < 1122004669633 = [2, 13, 23, 1662803]
+--   | n < 2152302898747 = [2, 3, 5, 7, 11]
+--   | n < 3474749660383 = [2, 3, 5, 7, 11, 13]
+--   | n < 341550071728321 = [2, 3, 5, 7, 11, 13, 17]
+--   | n < 3825123056546413051 = [2, 3, 5, 7, 11, 13, 17, 19, 23]
+--   | n < 18446744073709551616 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
 
 -- With these values of a, guaranteed to work up to 3*10^18 (see https://pastebin.com/6XEFRPaZ)
 isPrime :: Integer -> Bool
-isPrime n = n `elem` smallPrimes || (n >= 29 && all (spp n) smallPrimes)
+isPrime n
+  | n `elem` small = True
+  | any ((==0) . (n `mod`)) small = False
+  | otherwise = all (spp n) small
+  where
+    small = smallPrimes n
 
 -- spp n a tests whether n is a strong probable prime to base a.
 spp :: Integer -> Integer -> Bool
