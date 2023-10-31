@@ -80,7 +80,7 @@ isPrime n
 
 -- spp n a tests whether n is a strong probable prime to base a.
 spp :: Integer -> Integer -> Bool
-spp n a = (modexp a d n == 1) || (n - 1) `elem` as
+spp n a = (ad == 1) || (n - 1) `elem` as
  where
   (s, d) = decompose (n - 1)
   ad = modexp a d n
