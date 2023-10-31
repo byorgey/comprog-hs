@@ -9,6 +9,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 
 import Control.Arrow
+import Data.Bits
 import Data.List (group, sort)
 import Data.Maybe (fromJust)
 
@@ -18,10 +19,10 @@ import Data.Maybe (fromJust)
 modexp :: Integer -> Integer -> Integer -> Integer
 modexp _ 0 _ = 1
 modexp b e m
-  | even e = (r * r) `mod` m
+  | e .&. 1 == 0 = (r * r) `mod` m
   | otherwise = (b * r * r) `mod` m
  where
-  r = modexp b (e `div` 2) m
+  r = modexp b (e `shiftR` 1) m
 
 ------------------------------------------------------------
 -- (Extended) Euclidean algorithm
@@ -52,7 +53,7 @@ inverse p a = y `mod` p
 --------------------------------------------------
 -- Miller-Rabin primality testing
 
-smallPrimes _ = take 9 primes
+smallPrimes = take 9 primes
 
 -- https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Testing_against_small_sets_of_bases
 -- smallPrimes n
@@ -72,11 +73,9 @@ smallPrimes _ = take 9 primes
 -- With these values of a, guaranteed to work up to 3*10^18 (see https://pastebin.com/6XEFRPaZ)
 isPrime :: Integer -> Bool
 isPrime n
-  | n `elem` small = True
-  | any ((==0) . (n `mod`)) small = False
-  | otherwise = all (spp n) small
-  where
-    small = smallPrimes n
+  | n `elem` smallPrimes = True
+  | any ((== 0) . (n `mod`)) smallPrimes = False
+  | otherwise = all (spp n) smallPrimes
 
 -- spp n a tests whether n is a strong probable prime to base a.
 spp :: Integer -> Integer -> Bool
@@ -84,13 +83,13 @@ spp n a = (ad == 1) || (n - 1) `elem` as
  where
   (s, d) = decompose (n - 1)
   ad = modexp a d n
-  as = take (fromIntegral s) (iterate ((`mod` n) . (^ 2)) ad)
+  as = take s (iterate ((`mod` n) . (^ 2)) ad)
 
 -- decompose n = (s,d) such that n = 2^s * d and d is odd.
-decompose :: Integer -> (Integer, Integer)
+decompose :: Integer -> (Int, Integer)
 decompose n
   | odd n = (0, n)
-  | otherwise = first succ (decompose (n `div` 2))
+  | otherwise = first succ (decompose (n `shiftR` 1))
 
 --------------------------------------------------
 -- Pollard Rho factoring algorithm
