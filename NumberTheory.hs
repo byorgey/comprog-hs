@@ -17,12 +17,14 @@ import Data.Maybe (fromJust)
 -- Modular exponentiation
 
 modexp :: Integer -> Integer -> Integer -> Integer
-modexp _ 0 _ = 1
-modexp b e m
-  | e .&. 1 == 0 = (r * r) `mod` m
-  | otherwise = (b * r * r) `mod` m
+modexp b e m = go e
  where
-  r = modexp b (e `shiftR` 1) m
+  go 0 = 1
+  go e
+    | e `testBit` 0 = (b * r * r) `mod` m
+    | otherwise = (r * r) `mod` m
+   where
+    r = go (e `shiftR` 1)
 
 ------------------------------------------------------------
 -- (Extended) Euclidean algorithm
@@ -53,43 +55,47 @@ inverse p a = y `mod` p
 --------------------------------------------------
 -- Miller-Rabin primality testing
 
-smallPrimes = take 9 primes
+-- Need to upgrade to Baille-PSW?  See ~/learning/primality/baille-PSW.py
+
+smallPrimes = take 20 primes
 
 -- https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Testing_against_small_sets_of_bases
--- smallPrimes n
---   | n < 2047 = [2]
---   | n < 1373653 = [2,3]
---   | n < 9080191 = [31, 73]
---   | n < 25326001 = [2, 3, 5]
---   | n < 3215031751 = [2, 3, 5, 7]
---   | n < 4759123141 = [2, 7, 61]
---   | n < 1122004669633 = [2, 13, 23, 1662803]
---   | n < 2152302898747 = [2, 3, 5, 7, 11]
---   | n < 3474749660383 = [2, 3, 5, 7, 11, 13]
---   | n < 341550071728321 = [2, 3, 5, 7, 11, 13, 17]
---   | n < 3825123056546413051 = [2, 3, 5, 7, 11, 13, 17, 19, 23]
---   | n < 18446744073709551616 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
+mrPrimes n
+  -- \| n < 2047 = [2]
+  -- \| n < 1373653 = [2, 3]
+  -- \| n < 9080191 = [31, 73]
+  -- \| n < 25326001 = [2, 3, 5]
+  -- \| n < 3215031751 = [2, 3, 5, 7]
+  -- \| n < 4759123141 = [2, 7, 61]
+  | n < 1122004669633 = [2, 13, 23, 1662803]
+  | n < 2152302898747 = [2, 3, 5, 7, 11]
+  | n < 3474749660383 = [2, 3, 5, 7, 11, 13]
+  | n < 341550071728321 = [2, 3, 5, 7, 11, 13, 17]
+  | n < 3825123056546413051 = [2, 3, 5, 7, 11, 13, 17, 19, 23]
+  | n < 18446744073709551616 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
 
 -- With these values of a, guaranteed to work up to 3*10^18 (see https://pastebin.com/6XEFRPaZ)
 isPrime :: Integer -> Bool
 isPrime n
   | n `elem` smallPrimes = True
   | any ((== 0) . (n `mod`)) smallPrimes = False
-  | otherwise = all (spp n) smallPrimes
+  | otherwise = all (spp n) (mrPrimes n)
 
 -- spp n a tests whether n is a strong probable prime to base a.
 spp :: Integer -> Integer -> Bool
-spp n a = (ad == 1) || (n - 1) `elem` as
+spp n a = (ad == 1) || n1 `elem` as
  where
-  (s, d) = decompose (n - 1)
+  n1 = n - 1
+  (s, d) = decompose n1
   ad = modexp a d n
   as = take s (iterate ((`mod` n) . (^ 2)) ad)
 
 -- decompose n = (s,d) such that n = 2^s * d and d is odd.
+-- Only works for n < 2^63.
 decompose :: Integer -> (Int, Integer)
-decompose n
-  | odd n = (0, n)
-  | otherwise = first succ (decompose (n `shiftR` 1))
+decompose n = (tz, n `shiftR` tz)
+ where
+  tz = countTrailingZeros (fromIntegral n :: Int)
 
 --------------------------------------------------
 -- Pollard Rho factoring algorithm
