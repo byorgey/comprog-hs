@@ -79,16 +79,25 @@ isPrime :: Integer -> Bool
 isPrime n
   | n `elem` smallPrimes = True
   | any ((== 0) . (n `mod`)) smallPrimes = False
-  | otherwise = all (spp n) (mrPrimes n)
+  | otherwise = spps n (mrPrimes n)
 
 -- spp n a tests whether n is a strong probable prime to base a.
 spp :: Integer -> Integer -> Bool
-spp n a = (ad == 1) || n1 `elem` as
+spp n a = spp' n s d a
  where
-  n1 = n - 1
-  (s, d) = decompose n1
+  (s, d) = decompose (n - 1)
+
+spp' n s d a = (ad == 1) || (n - 1) `elem` as
+ where
   ad = modexp a d n
   as = take s (iterate ((`mod` n) . (^ 2)) ad)
+
+-- spps n as tests whether n is a strong probable prime to all the
+-- given bases.
+spps :: Integer -> [Integer] -> Bool
+spps n = all (spp' n s d)
+ where
+  (s, d) = decompose (n - 1)
 
 -- decompose n = (s,d) such that n = 2^s * d and d is odd.
 -- Only works for n < 2^63.
