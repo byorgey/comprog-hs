@@ -6,6 +6,8 @@
 module Geom where
 
 import Data.Function (on)
+import Data.List (nub)
+import Data.Maybe (mapMaybe)
 import Data.Ord (compare)
 import Data.Ratio
 
@@ -33,6 +35,9 @@ V2 x1 y1 ^-^ V2 x2 y2 = V2 (x1 - x2) (y1 - y2)
 (*^) :: Num s => s -> V2 s -> V2 s
 (*^) k = fmap (k *)
 
+(^/) :: Fractional s => V2 s -> s -> V2 s
+v ^/ k = (1 / k) *^ v
+
 ------------------------------------------------------------
 -- Utilities
 
@@ -50,6 +55,10 @@ instance Ord s => Ord (ByX s) where
 
 instance Ord s => Ord (ByY s) where
   compare = compare `on` (getY . unByY)
+
+-- Manhattan distance
+manhattan :: Num s => P2 s -> P2 s -> s
+manhattan (V2 x1 y1) (V2 x2 y2) = abs (x1 - x2) + abs (y1 - y2)
 
 ------------------------------------------------------------
 -- Angles
@@ -205,6 +214,11 @@ slope (getDirection -> V2 x y) = case x of
   0 -> Nothing
   _ -> Just (y % x)
 
+dslope :: (Fractional s, Eq s) => L2 s -> Maybe s
+dslope (getDirection -> V2 x y) = case x of
+  0 -> Nothing
+  _ -> Just (y / x)
+
 side :: Num s => L2 s -> P2 s -> s
 side (L2 v c) p = cross v p - c
 
@@ -223,10 +237,55 @@ project l p = p ^+^ toProjection l p
 reflectAcross :: Fractional s => L2 s -> P2 s -> P2 s
 reflectAcross l p = p ^+^ (2 *^ toProjection l p)
 
+lineIntersection :: (Fractional s, Eq s) => L2 s -> L2 s -> Maybe (P2 s)
+lineIntersection (L2 v1 c1) (L2 v2 c2)
+  | cross v1 v2 == 0 = Nothing
+  | otherwise = Just $ ((c1 *^ v2) ^-^ (c2 *^ v1)) ^/ cross v1 v2
+
+------------------------------------------------------------
+-- Segments
+
+data Seg s = Seg (P2 s) (P2 s) deriving (Eq, Show)
+
+segLine :: Num s => Seg s -> L2 s
+segLine (Seg p q) = lineFromPoints p q
+
+-- Test whether two segments intersect.
+-- http://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+segsIntersect :: (Ord s, Num s) => Seg s -> Seg s -> Bool
+segsIntersect (Seg p1 q1) (Seg p2 q2)
+  | o1 /= o2 && o3 /= o4 = True
+  | o1 == 0 && onSegment p1 p2 q1 = True
+  | o2 == 0 && onSegment p1 q2 q1 = True
+  | o3 == 0 && onSegment p2 p1 q2 = True
+  | o4 == 0 && onSegment p2 q1 q2 = True
+  | otherwise = False
+ where
+  o1 = signum $ crossP p1 q1 p2
+  o2 = signum $ crossP p1 q1 q2
+  o3 = signum $ crossP p2 q2 p1
+  o4 = signum $ crossP p2 q2 q1
+
+  -- Given three *collinear* points p, q, r, check whether q lies on pr.
+  onSegment (V2 px py) (V2 qx qy) (V2 rx ry) =
+    min px rx <= qx
+      && qx <= max px rx
+      && min py ry <= qy
+      && qy <= max py ry
+
+segsIntersection :: (Ord s, Fractional s) => Seg s -> Seg s -> Maybe (P2 s)
+segsIntersection s1 s2
+  | segsIntersect s1 s2 = lineIntersection (segLine s1) (segLine s2)
+  | otherwise = Nothing
+
 ------------------------------------------------------------
 -- Rectangles
 
 data Rect s = Rect {lowerLeft :: P2 s, dims :: V2 s} deriving (Eq, Show)
+
+rectFromCorners :: (Num s, Ord s) => P2 s -> P2 s -> Rect s
+rectFromCorners (V2 x1 y1) (V2 x2 y2) =
+  Rect (V2 (min x1 x2) (min y1 y2)) (V2 (abs (x2 - x1)) (abs (y2 - y1)))
 
 pointInRect :: (Ord s, Num s) => P2 s -> Rect s -> Bool
 pointInRect (V2 px py) (Rect (V2 llx lly) (V2 dx dy)) =
@@ -236,6 +295,24 @@ pointInRect (V2 px py) (Rect (V2 llx lly) (V2 dx dy)) =
     , py >= lly
     , py <= lly + dy
     ]
+
+rectSegs :: Num s => Rect s -> [Seg s]
+rectSegs (Rect ll d@(V2 dx dy)) = [Seg ll ul, Seg ul ur, Seg ur lr, Seg lr ll]
+ where
+  ul = ll ^+^ V2 0 dy
+  ur = ll ^+^ d
+  lr = ll ^+^ V2 dx 0
+
+rectSegIntersection :: (Fractional s, Ord s) => Rect s -> Seg s -> Maybe (Seg s)
+rectSegIntersection r s@(Seg t u)
+  | pointInRect t r && pointInRect u r = Just s
+  | otherwise = case nub (mapMaybe (segsIntersection s) (rectSegs r)) of
+      [] -> Nothing
+      [p, q] -> Just $ Seg p q
+      [p]
+        | pointInRect t r -> Just (Seg p t)
+        | pointInRect u r -> Just (Seg p u)
+        | otherwise -> Nothing
 
 ------------------------------------------------------------
 -- Circles
