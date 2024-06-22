@@ -24,12 +24,12 @@ extra-source-files:
 library
     exposed-modules:  Enumeration,
                       Geom,
-                      Graph,
                       Interval,
                       NumberTheory,
                       Perm,
                       ScannerBS,
                       Scanner,
+                      Sieve,
                       Slice,
                       Util
 
