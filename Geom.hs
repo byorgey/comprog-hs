@@ -115,14 +115,17 @@ normSq v = dot v v
 norm :: Floating s => V2 s -> s
 norm = sqrt . normSq
 
+normalize :: Floating s => V2 s -> V2 s
+normalize v = v ^/ norm v
+
 -- | 'angleP p1 p2 p3' computes the (unsigned) angle of p1-p2-p3
 --   (/i.e./ the angle at p2 made by rays to p1 and p3).  The result
 --   will always be in the range $[0, \pi]$.
 angleP :: Floating s => P2 s -> P2 s -> P2 s -> Angle s
 angleP x y z = A $ acos (dot a b / (norm a * norm b))
  where
-  a = (x ^-^ y)
-  b = (z ^-^ y)
+  a = x ^-^ y
+  b = z ^-^ y
 
 -- | 'signedAngleP p1 p2 p3' computes the /signed/ angle p1-p2-p3
 --   (/i.e./ the angle at p2 made by rays to p1 and p3), in the range
