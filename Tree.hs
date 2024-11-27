@@ -1,17 +1,18 @@
 -- https://byorgey.github.io/blog/posts/2024/07/11/cpih-factor-full-tree.html
 -- https://byorgey.github.io/blog/posts/2024/08/08/TreeDecomposition.html
+{-# LANGUAGE TupleSections #-}
 
 module Tree where
 
 import Control.Arrow ((***))
 import Control.Category ((>>>))
 import Data.Bifunctor (second)
-import Data.List (maximumBy)
+import Data.List (maximumBy, sortBy)
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import Data.Map (Map, (!?))
 import qualified Data.Map as M
-import Data.Ord (comparing)
+import Data.Ord (Down (..), comparing)
 import Data.Tree
 import Data.Tuple (swap)
 
