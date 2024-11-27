@@ -1,4 +1,6 @@
 -- Adapted from https://kseo.github.io/posts/2014-01-30-implementing-union-find-in-haskell.html
+-- https://byorgey.github.io/blog/posts/2024/11/02/UnionFind.html
+-- https://byorgey.github.io/blog/posts/2024/11/18/UnionFind-sols.html
 {-# LANGUAGE RecordWildCards #-}
 
 module UnionFind where
@@ -38,13 +40,13 @@ find uf@(UnionFind {..}) x = do
       pure r
     else pure x
 
-updateAnn :: (Semigroup m) => UnionFind s m -> Node -> m -> ST s ()
+updateAnn :: Semigroup m => UnionFind s m -> Node -> m -> ST s ()
 updateAnn uf@(UnionFind {..}) x m = do
   x <- find uf x
   old <- readArray ann x -- modifyArray is not available in Kattis test environment
   writeArray ann x (old <> m)
 
-union :: (Semigroup m) => UnionFind s m -> Node -> Node -> ST s ()
+union :: Semigroup m => UnionFind s m -> Node -> Node -> ST s ()
 union uf@(UnionFind {..}) x y = do
   x <- find uf x
   y <- find uf y
