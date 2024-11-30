@@ -61,25 +61,31 @@ smallPrimes = take 20 primes
 
 -- https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Testing_against_small_sets_of_bases
 mrPrimes n
-  -- \| n < 2047 = [2]
-  -- \| n < 1373653 = [2, 3]
-  -- \| n < 9080191 = [31, 73]
-  -- \| n < 25326001 = [2, 3, 5]
-  -- \| n < 3215031751 = [2, 3, 5, 7]
-  -- \| n < 4759123141 = [2, 7, 61]
+  | n < 2047 = [2]
+  | n < 1373653 = [2, 3]
+  | n < 9080191 = [31, 73]
+  | n < 25326001 = [2, 3, 5]
+  | n < 3215031751 = [2, 3, 5, 7]
+  | n < 4759123141 = [2, 7, 61]
   | n < 1122004669633 = [2, 13, 23, 1662803]
   | n < 2152302898747 = [2, 3, 5, 7, 11]
   | n < 3474749660383 = [2, 3, 5, 7, 11, 13]
   | n < 341550071728321 = [2, 3, 5, 7, 11, 13, 17]
   | n < 3825123056546413051 = [2, 3, 5, 7, 11, 13, 17, 19, 23]
-  | n < 18446744073709551616 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
+  | n < 318665857834031151167461 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
+  | n < 3317044064679887385961981 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]
 
--- With these values of a, guaranteed to work up to 3*10^18 (see https://pastebin.com/6XEFRPaZ)
+-- With these values of a, guaranteed to work up to 3*10^24 (see https://pastebin.com/6XEFRPaZ)
 isPrime :: Integer -> Bool
 isPrime n
+  | n == 1 = False
   | n `elem` smallPrimes = True
   | any ((== 0) . (n `mod`)) smallPrimes = False
   | otherwise = spps n (mrPrimes n)
+
+isPrimeTrialDiv :: Integer -> Bool
+isPrimeTrialDiv 1 = False
+isPrimeTrialDiv n = all ((/=0) . (n `mod`)) (takeWhile (\p -> p*p <= n) primes)
 
 -- spp n a tests whether n is a strong probable prime to base a.
 spp :: Integer -> Integer -> Bool
