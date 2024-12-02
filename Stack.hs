@@ -4,8 +4,9 @@
 module Stack where
 
 import Data.List (foldl')
+import Data.Monoid (Dual (..))
 
-data Stack m a = Stack (a -> m) !Int [(m, a)]
+data Stack m a = Stack !(a -> m) !Int ![(m, a)]
 
 instance (Show m, Show a) => Show (Stack m a) where
   show (Stack _ _ as) = show as
@@ -32,5 +33,8 @@ pop (Stack f n as) = case as of
   [] -> Nothing
   (_, a) : as' -> Just (a, Stack f (n - 1) as')
 
+reverse' :: Monoid n => (m -> n) -> Stack m a -> Stack n a
+reverse' g (Stack f _ as) = foldl' (flip push) (new (g . f)) (map snd as)
+
 reverse :: Monoid m => Stack m a -> Stack m a
-reverse (Stack f _ as) = foldl' (flip push) (new f) (map snd as)
+reverse = reverse' id

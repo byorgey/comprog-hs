@@ -29,11 +29,13 @@ library
                       Interval,
                       NumberTheory,
                       Perm,
+                      Queue,
                       ScannerBS,
                       Scanner,
                       SegTree,
                       Sieve,
                       Slice,
+                      Stack,
                       Tree,
                       Util
 
