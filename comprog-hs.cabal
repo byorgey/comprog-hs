@@ -22,15 +22,21 @@ extra-source-files:
     README.md
 
 library
-    exposed-modules:  Enumeration,
+    exposed-modules:  BFS,
+                      BinarySearch,
+                      Enumeration,
                       Geom,
-                      Graph,
                       Interval,
                       NumberTheory,
                       Perm,
+                      Queue,
                       ScannerBS,
                       Scanner,
+                      SegTree,
+                      Sieve,
                       Slice,
+                      Stack,
+                      Tree,
                       Util
 
     build-depends:    base,

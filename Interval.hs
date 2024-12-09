@@ -5,6 +5,9 @@ import Prelude hiding (drop, length, take)
 data I = I {lo :: !Int, hi :: !Int}
     deriving (Eq, Ord, Show)
 
+point :: Int -> I
+point x = I x x
+
 mkI :: Int -> Int -> I
 mkI l h
     | l == h = I 0 0
@@ -14,14 +17,14 @@ mkI l h
 I l1 h1 ∪ I l2 h2 = I (min l1 l2) (max h1 h2)
 I l1 h1 ∩ I l2 h2 = I (max l1 l2) (min h1 h2)
 
+intersects :: I -> I -> Bool
+intersects i1 i2 = not (isEmpty (i1 ∩ i2))
+
 isEmpty :: I -> Bool
 isEmpty (I l h) = l > h
 
 (⊆) :: I -> I -> Bool
 i1 ⊆ i2 = i1 ∪ i2 == i2
-
-point :: Int -> I
-point x = I x x
 
 uncons :: I -> I
 uncons (I l h) = mkI (l + 1) h
