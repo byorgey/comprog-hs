@@ -40,11 +40,11 @@ find uf@(UnionFind {..}) x = do
       pure r
     else pure x
 
-updateAnn :: Semigroup m => UnionFind s m -> Node -> m -> ST s ()
-updateAnn uf@(UnionFind {..}) x m = do
+updateAnn :: Semigroup m => UnionFind s m -> Node -> (m -> m) -> ST s ()
+updateAnn uf@(UnionFind {..}) x f = do
   x <- find uf x
   old <- readArray ann x -- modifyArray is not available in Kattis test environment
-  writeArray ann x (old <> m)
+  writeArray ann x (f old)
 
 union :: Semigroup m => UnionFind s m -> Node -> Node -> ST s ()
 union uf@(UnionFind {..}) x y = do
@@ -74,3 +74,14 @@ getAnn :: UnionFind s m -> Node -> ST s m
 getAnn uf@(UnionFind {..}) x = do
   x <- find uf x
   readArray ann x
+
+allAnns :: UnionFind s m -> ST s [(Int, m)]
+allAnns UnionFind {..} = do
+  ps <- getAssocs parent
+  flip foldMap ps $ \(p, x) ->
+    if p == x
+      then do
+        a <- readArray ann x
+        s <- readArray sz x
+        pure [(s, a)]
+      else pure []
