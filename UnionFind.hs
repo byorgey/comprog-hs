@@ -85,3 +85,22 @@ allAnns UnionFind {..} = do
         s <- readArray sz x
         pure [(s, a)]
       else pure []
+
+-- XXX comment me
+-- https://algocoding.wordpress.com/2015/05/13/simple-union-find-techniques/
+unite :: Semigroup m => UnionFind s m -> Node -> Node -> ST s Bool
+unite uf x y = do
+  px <- readArray parent x
+  py <- readArray parent y
+  case compare px py of
+    EQ -> pure True
+    LT -> do
+      writeArray parent x py
+      case x == px of
+        True -> pure False
+        False -> unite uf px y
+    GT -> do
+      writeArray parent y px
+      case y == py of
+        True -> pure False
+        False -> unite uf x py
