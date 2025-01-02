@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module SparseTable where
 
 import Data.Array (Array, array, (!))

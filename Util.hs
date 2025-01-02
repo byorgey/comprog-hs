@@ -4,8 +4,10 @@ module Util where
 
 import Control.Arrow
 import Data.Array.IArray
+import Data.Bits (finiteBitSize, countLeadingZeros)
 import Data.Function
 import Data.List
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Ord
 
@@ -18,8 +20,8 @@ fj = fromJust
 both :: (a -> b) -> (a, a) -> (b, b)
 both f (x, y) = (f x, f y)
 
-sortGroupOn :: Ord b => (a -> b) -> [a] -> [(b, [a])]
-sortGroupOn f = sortOn f >>> groupBy ((==) `on` f) >>> map ((f . head) &&& id)
+sortGroupOn :: Ord b => (a -> b) -> [a] -> [(b, NE.NonEmpty a)]
+sortGroupOn f = sortOn f >>> NE.groupBy ((==) `on` f) >>> map ((f . NE.head) &&& id)
 
 pairs :: [a] -> [(a, a)]
 pairs [] = []

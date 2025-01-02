@@ -26,6 +26,7 @@ library
                       BinarySearch,
                       Enumeration,
                       Geom,
+                      IdempotentSemigroup,
                       Interval,
                       NumberTheory,
                       Perm,
@@ -35,6 +36,7 @@ library
                       SegTree,
                       Sieve,
                       Slice,
+                      SparseTable,
                       Stack,
                       Tree,
                       Util
