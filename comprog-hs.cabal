@@ -37,6 +37,7 @@ library
                       Sieve,
                       Slice,
                       SparseTable,
+                      SqrtTree,
                       Stack,
                       Tree,
                       Util

@@ -1,3 +1,5 @@
+-- https://cp-algorithms.com/data_structures/sparse-table.html
+
 {-# LANGUAGE TupleSections #-}
 
 module SparseTable where
