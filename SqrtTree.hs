@@ -9,6 +9,10 @@ module SqrtTree where
 import Data.Array (Array, array, listArray, (!), bounds)
 import Data.List (scanl1, scanr1)
 
+import Data.Semigroup
+import Control.Monad
+import System.Random
+
 data Block m = Block
   { total :: m             -- ^ total of this entire block
   , prefix :: Array Int m  -- ^ prefix sums for this block
@@ -81,3 +85,15 @@ range (Branch k blocks between) l r
   where
    (lb, li) = l `divMod` k
    (rb, ri) = r `divMod` k
+
+randomRange :: Semigroup m => SqrtTree m -> IO m
+randomRange t = do
+  l <- randomRIO (0,999999)
+  r <- randomRIO (l,999999)
+  pure $ range t l r
+
+main = do
+  ns <- replicateM 1000000 (randomRIO (0,1000 :: Int))
+  let t = fromList (map Sum ns)
+  rs <- replicateM 1000000 (randomRange t)
+  print (getSum $ mconcat rs)
