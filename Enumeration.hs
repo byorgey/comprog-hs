@@ -7,9 +7,8 @@ module Enumeration where
 
 import qualified Data.List as L
 
-import Data.Hashable
 import qualified Data.Array as A
-import qualified Data.HashMap.Strict as HM
+import qualified Data.Map.Strict as M
 
 data Enumeration a = Enumeration
   { card   :: !Int
@@ -50,15 +49,15 @@ finiteE n = Enumeration n id id
 -- | Construct an enumeration from the elements of a finite list.
 --   The elements of the list must all be distinct. To turn an
 --   enumeration back into a list, use 'enumerate'.
-listE :: forall a. (Hashable a, Eq a) => [a] -> Enumeration a
-listE as = Enumeration n (toA A.!) (fromA HM.!)
+listE :: forall a. Ord a => [a] -> Enumeration a
+listE as = Enumeration n (toA A.!) (fromA M.!)
   where
     n = length as
     toA :: A.Array Int a
     toA = A.listArray (0,n-1) as
 
-    fromA :: HM.HashMap a Int
-    fromA = HM.fromList (zip as [0 :: Int ..])
+    fromA :: M.Map a Int
+    fromA = M.fromList (zip as [0 :: Int ..])
 
 -- | Enumerate all the values of a bounded 'Enum' instance.
 boundedEnum :: forall a. (Enum a, Bounded a) => Enumeration a
