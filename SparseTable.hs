@@ -5,8 +5,7 @@
 module SparseTable where
 
 import Data.Array (Array, array, (!))
-import Data.Bifunctor (first)
-import Data.Bits
+import Data.Bits (countLeadingZeros, finiteBitSize, (!<<.))
 import IdempotentSemigroup
 
 newtype SparseTable m = SparseTable (Array (Int, Int) m)
@@ -28,7 +27,7 @@ fromList ms = SparseTable st
 
   st =
     array ((0, 0), (lgn, n - 1)) $
-      (map (first (0,)) $ zip [0 ..] ms)
+      zip ((0,) <$> [0 ..]) ms
         ++ [ ((i, j), st ! (i - 1, j) <> st ! (i - 1, j + 1 !<<. (i - 1)))
            | i <- [1 .. lgn]
            , j <- [0 .. n - 1 !<<. i]
