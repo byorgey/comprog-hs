@@ -143,6 +143,8 @@ factorMap = factor >>> M.fromList
 factor :: Integer -> [(Integer, Int)]
 factor = listFactors >>> group >>> map (head &&& length)
 
+-- Surprisingly, this is faster than Bird's circular sieve
+-- (11.6s for this to print the 1 millionth prime, vs 17.2s for Bird)
 primes :: [Integer]
 primes = 2 : sieve primes [3 ..]
  where
