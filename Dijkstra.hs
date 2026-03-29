@@ -8,8 +8,6 @@
 
 module Dijkstra where
 
-import Debug.Trace
-
 import Enumeration
 
 import Control.Arrow (second, (>>>))
@@ -102,7 +100,7 @@ dijkstra' n vs next goal = do
   st <- initDijkstraState n vs
   exhaustM dijkstraStep st
  where
-  dijkstraStep st@DS {..} = traceShow pq $ case S.minView pq of
+  dijkstraStep st@DS {..} = case S.minView pq of
     Nothing -> return Nothing
     Just ((_, v), pq')
       | goal v -> return Nothing
